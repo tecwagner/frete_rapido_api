@@ -1,0 +1,7 @@
+services:
+
+    app:
+      container_name: frete_rapido_api
+      build: .
+      volumes:
+          - .:/go/src/   
