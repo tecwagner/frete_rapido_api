@@ -11,9 +11,10 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/main.go
 
 # Etapa final
-FROM scratch
+FROM alpine:latest
 
 COPY --from=builder /app/main /main
+COPY .env .env
 
 EXPOSE 8081
 

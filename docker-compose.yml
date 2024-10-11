@@ -4,4 +4,33 @@ services:
       container_name: frete_rapido_api
       build: .
       volumes:
-          - .:/go/src/   
+          - .:/app
+      ports:
+        - "8081:8081"    
+      depends_on:
+        - database
+      env_file:
+        - .env
+
+    database:
+      image: postgres:13
+      environment:
+        - POSTGRES_DB=freterapido
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=postgres
+      ports:
+        - "49158:5432"
+      volumes:
+        - .docker/dbdata:/var/lib/postgresql/data
+
+    pgadmin:
+      image: dpage/pgadmin4:6.21
+      container_name: clientpgsql
+      tty: true
+      environment:
+        - PGADMIN_DEFAULT_EMAIL=admin@user.com
+        - PGADMIN_DEFAULT_PASSWORD=123456
+      ports:
+        - "9000:80"
+      depends_on:
+        - database
