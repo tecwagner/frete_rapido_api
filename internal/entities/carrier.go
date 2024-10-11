@@ -16,14 +16,13 @@ type Carrier struct {
 	UpdatedAt       time.Time `json:"updated_at" gorm:"autoCreateTime"`
 }
 
-func NewCarrier(name string, service string, deadline int, price float64) (*Carrier, error) {
+func NewCarrier(name string, service string, deadline int, price float64, quoteResponseID uint) (*Carrier, error) {
 	carrier := &Carrier{
-		ID:              uint(time.Now().Unix()),
 		Name:            name,
 		Service:         service,
 		Deadline:        deadline,
 		Price:           price,
-		QuoteResponseID: uint(time.Now().Unix()),
+		QuoteResponseID: quoteResponseID,
 		CreatedAt:       time.Now(),
 		UpdatedAt:       time.Now(),
 	}

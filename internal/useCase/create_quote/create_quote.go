@@ -24,29 +24,40 @@ func (uc *CreateQuoteUseCase) Execute(ctx context.Context, input CreateQuoteInpu
 	}
 
 	quoteResponse := ProcessFreightFastResponse(freightResponse)
+	if quoteResponse.Carriers == nil {
+		return nil, errors.New("quoteResponse.Carriers is nil")
+	}
+
+	quoteResponseID := uint(time.Now().Unix())
+	var carrierEntities []entities.Carrier
 
 	for _, carrierDTO := range quoteResponse.Carriers {
-		carrierEntity := &entities.Carrier{
-			Name:      carrierDTO.Name,
-			Service:   carrierDTO.Service,
-			Deadline:  carrierDTO.Deadline,
-			Price:     carrierDTO.Price,
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
+		if carrierDTO.Name == "" || carrierDTO.Service == "" {
+			return nil, errors.New("carrier DTO has empty fields")
 		}
+		carrierEntity := entities.Carrier{
+			Name:     carrierDTO.Name,
+			Service:  carrierDTO.Service,
+			Deadline: carrierDTO.Deadline,
+			Price:    carrierDTO.Price,
+		}
+		carrierEntities = append(carrierEntities, carrierEntity)
+	}
 
-		err = uc.quoteGateway.Save(ctx, carrierEntity)
-		if err != nil {
-			return nil, errors.New("failed to save quote: " + err.Error())
-		}
+	err = uc.quoteGateway.Save(ctx, carrierEntities, quoteResponseID)
+	if err != nil {
+		return nil, errors.New("failed to save carriers: " + err.Error())
 	}
 
 	return quoteResponse, nil
 }
 
 func ProcessFreightFastResponse(input FreightFastOutputDTO) *CreateQuoteOutputDTO {
-	var carriers []Carrier
+	if len(input.Dispatchers) == 0 {
+		return &CreateQuoteOutputDTO{Carriers: []Carrier{}}
+	}
 
+	var carriers []Carrier
 	for _, dispatcher := range input.Dispatchers {
 		for _, offer := range dispatcher.Offers {
 			carrier := Carrier{

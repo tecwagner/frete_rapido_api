@@ -42,24 +42,25 @@ func (s *CarrierDBTestSuite) TestSave() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	carrierDB := &entities.Carrier{
-		ID:              uint(time.Now().Unix()),
-		Name:            "Teste Carrier",
-		Service:         "Entrega Expressa",
-		Deadline:        3,
-		Price:           120.50,
-		QuoteResponseID: uint(time.Now().Unix()),
-		CreatedAt:       time.Now(),
-		UpdatedAt:       time.Now(),
+	carriers := []entities.Carrier{
+		{
+			Name:            "Teste Carrier",
+			Service:         "Entrega Expressa",
+			Deadline:        3,
+			Price:           120.50,
+			QuoteResponseID: 1,
+			CreatedAt:       time.Now(),
+			UpdatedAt:       time.Now(),
+		},
 	}
 
 	// Salva o Carrier no banco de dados
-	err := s.carrierDB.Save(ctx, carrierDB)
+	err := s.carrierDB.Save(ctx, carriers, 1)
 	s.Nil(err)
 
 	// Verifica se o registro foi salvo corretamente
 	var count int64
-	err = s.db.Model(&entities.Carrier{}).Where("id = ?", carrierDB.ID).Count(&count).Error
+	err = s.db.Model(&entities.Carrier{}).Where("id = ?", carriers[0].ID).Count(&count).Error
 	s.Nil(err)
 	s.Equal(int64(1), count)
 
