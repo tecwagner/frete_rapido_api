@@ -11,7 +11,7 @@ type MockCarrierGateway struct {
 	mock.Mock
 }
 
-func (m *MockCarrierGateway) Save(ctx context.Context, carrier *entities.Carrier) error {
-	args := m.Called(carrier)
+func (m *MockCarrierGateway) Save(ctx context.Context, carriers []entities.Carrier, quoteResponseID uint) error {
+	args := m.Called(ctx, carriers, quoteResponseID)
 	return args.Error(0)
 }

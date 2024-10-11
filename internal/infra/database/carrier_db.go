@@ -95,11 +95,32 @@ func NewCarrierDB(db *gorm.DB) *CarrierDB {
 }
 
 // Método para salvar carrier usando Gorm
-func (c *CarrierDB) Save(ctx context.Context, carrier *entities.Carrier) error {
+func (c *CarrierDB) Save(ctx context.Context, carriers []entities.Carrier, quoteResponseID uint) error {
 
-	err := c.DB.WithContext(ctx).Create(carrier).Error
-	if err != nil {
-		return wrapError(err, "failed to save carrier")
+	// Inicia uma transação
+	tx := c.DB.WithContext(ctx).Begin()
+
+	// Verifica se a transação foi iniciada corretamente
+	if tx.Error != nil {
+		return wrapError(tx.Error, "failed to begin transaction")
 	}
+
+	// Itera sobre cada carrier e associa o quoteResponseID
+	for i := range carriers {
+		carriers[i].QuoteResponseID = quoteResponseID // Associa o carrier à quote
+
+		// Tenta salvar o carrier na transação
+		if err := tx.Create(&carriers[i]).Error; err != nil {
+			// Reverte a transação em caso de erro
+			tx.Rollback()
+			return wrapError(err, "failed to save carrier")
+		}
+	}
+
+	// Commit a transação se tudo der certo
+	if err := tx.Commit().Error; err != nil {
+		return wrapError(err, "failed to commit transaction")
+	}
+
 	return nil
 }

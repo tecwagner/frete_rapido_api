@@ -10,11 +10,10 @@ import (
 	"github.com/tecwagner/frete_rapido_api/internal/useCase/mocks"
 )
 
-// Teste do caso de uso CreateQuoteUseCase
-func TestCreateQuoteUseCase_Execute(t *testing.T) {
+func TestCreateQuoteUseCase_Execute_Success(t *testing.T) {
+	ctx := context.Background()
 	mockGateway := new(mocks.MockCarrierGateway)
 
-	// Simula o comportamento da função de cotação
 	mockQuoteFetcher := func(input CreateQuoteInputDTO) (FreightFastOutputDTO, error) {
 		return FreightFastOutputDTO{
 			Dispatchers: []struct {
@@ -38,11 +37,10 @@ func TestCreateQuoteUseCase_Execute(t *testing.T) {
 		}, nil
 	}
 
-	// Crie o caso de uso com o mock do gateway e o mock da função de cotação
 	useCase := NewCreateQuoteUseCase(mockGateway, mockQuoteFetcher)
 
 	input := CreateQuoteInputDTO{
-		Shipper:   Shipper{RegisteredNumber: "123456789", Token: "token", PlatformCode: "platform"},
+		Shipper:   Shipper{RegisteredNumber: "25438296000158", Token: "1d52a9b6b78cf07b08586152459a5c90", PlatformCode: "5AKVkHqCn"},
 		Recipient: Recipient{Type: 1, Country: "BR", Zipcode: 12345},
 		Dispatchers: []Dispatcher{
 			{
@@ -57,10 +55,9 @@ func TestCreateQuoteUseCase_Execute(t *testing.T) {
 		SimulationType: []int{1},
 	}
 
-	// Defina o que o mock deve retornar ao salvar
-	mockGateway.On("Save", mock.AnythingOfType("*entities.Carrier")).Return(nil).Once()
+	// Mock para a chamada Save que retorna nil
+	mockGateway.On("Save", mock.Anything, mock.AnythingOfType("[]entities.Carrier"), mock.AnythingOfType("uint")).Return(nil).Once()
 
-	ctx := context.Background()
 	output, err := useCase.Execute(ctx, input)
 
 	// Verifique as asserções
@@ -69,13 +66,14 @@ func TestCreateQuoteUseCase_Execute(t *testing.T) {
 	assert.Len(t, output.Carriers, 1)
 	assert.Equal(t, "Carrier1", output.Carriers[0].Name)
 
-	// Verifique se o método Save foi chamado
+	// Verifique se o método Save foi chamado com os parâmetros corretos
 	mockGateway.AssertExpectations(t)
-
 }
 
 // Teste de erro ao salvar
 func TestCreateQuoteUseCase_SaveError(t *testing.T) {
+
+	ctx := context.Background()
 	mockGateway := new(mocks.MockCarrierGateway)
 
 	// Simula o comportamento da função de cotação
@@ -121,16 +119,14 @@ func TestCreateQuoteUseCase_SaveError(t *testing.T) {
 		SimulationType: []int{1},
 	}
 
-	// Simule um erro ao salvar
-	mockGateway.On("Save", mock.AnythingOfType("*entities.Carrier")).Return(errors.New("database error")).Once()
+	mockGateway.On("Save", mock.Anything, mock.AnythingOfType("[]entities.Carrier"), mock.AnythingOfType("uint")).Return(errors.New("database error")).Once()
 
-	ctx := context.Background()
 	output, err := useCase.Execute(ctx, input)
 
 	// Verifique as asserções
 	assert.Error(t, err)
 	assert.Nil(t, output)
-	assert.Equal(t, "failed to save quote: database error", err.Error())
+	assert.Equal(t, "failed to save carriers: database error", err.Error())
 
 	// Verifique se o método Save foi chamado
 	mockGateway.AssertExpectations(t)

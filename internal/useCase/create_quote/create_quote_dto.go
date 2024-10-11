@@ -1,7 +1,5 @@
 package createquote
 
-import "time"
-
 type CreateQuoteInputDTO struct {
 	Shipper        Shipper      `json:"shipper"`
 	Recipient      Recipient    `json:"recipient"`
@@ -45,14 +43,10 @@ type CreateQuoteOutputDTO struct {
 }
 
 type Carrier struct {
-	ID              uint      `gorm:"primaryKey"`
-	Name            string    `json:"name"`
-	Service         string    `json:"service"`
-	Deadline        int       `json:"deadline"`
-	Price           float64   `json:"price"`
-	QuoteResponseID uint      `json:"quote_response_id"`
-	CreatedAt       time.Time `json:"created_at"`
-	UpdatedAt       time.Time `json:"updated_at"`
+	Name     string  `json:"name"`
+	Service  string  `json:"service"`
+	Deadline int     `json:"deadline"`
+	Price    float64 `json:"price"`
 }
 
 type FreightFastOutputDTO struct {

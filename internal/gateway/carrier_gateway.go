@@ -7,5 +7,5 @@ import (
 )
 
 type ICarrierGateway interface {
-	Save(ctx context.Context, carrier *entities.Carrier) error
+	Save(ctx context.Context, carrier []entities.Carrier, quoteResponseID uint) error
 }
