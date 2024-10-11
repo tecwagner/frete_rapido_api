@@ -9,6 +9,13 @@ API Rest desenvolvida em Go Lang para realizar cotações de frete utilizando a 
 ### Pré-requisitos
 
 - Docker
+- Docker Compose
+- Go Lang: 1.23
+- API REST
+- API Frete Rápido Simulação
+- Banco de Dados Teste: SQlite 
+- Banco de Dados Desenvolvimento: PostgreSQL
+- ORM: Gorm
 
 ### Executando a Aplicação
 
@@ -17,7 +24,18 @@ API Rest desenvolvida em Go Lang para realizar cotações de frete utilizando a 
    ```bash
    docker build -t frete_rapido_api .
 
-2. **Executar o container Docker:**
+2. **Executar o comando para permitir acesso docker/dbdata:**
 
    ```bash
-   docker run -d -p 8081:8080 frete_rapido_api   
+   sudo chown -R $USER:$USER .docker/dbdata   
+
+3. **Executar o container Docker:**
+
+   ```bash
+   docker compose up --build   
+
+4. **Ao Executar o projeto para testar as rotas: api > client.http**   
+
+   - Solicitar cotação:
+      - POST http://localhost:8081/api/v1/quote
+
