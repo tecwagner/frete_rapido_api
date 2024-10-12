@@ -54,11 +54,9 @@ func (s *CarrierDBTestSuite) TestSave() {
 		},
 	}
 
-	// Salva o Carrier no banco de dados
 	err := s.carrierDB.Save(ctx, carriers, 1)
 	s.Nil(err)
 
-	// Verifica se o registro foi salvo corretamente
 	var count int64
 	err = s.db.Model(&entities.Carrier{}).Where("id = ?", carriers[0].ID).Count(&count).Error
 	s.Nil(err)

@@ -2,33 +2,50 @@ package createquote
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"time"
 )
 
-const freightfastURL = "https://sp.freterapido.com/api/v3/quote/simulate"
+type HTTPClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
 
-func GetQuoteFromFreightFast(request CreateQuoteInputDTO) (FreightFastOutputDTO, error) {
+type QuoteService struct {
+	APIURL     string
+	HTTPClient HTTPClient
+}
+
+func NewQuoteService(apiURL string, client HTTPClient) *QuoteService {
+	return &QuoteService{
+		APIURL:     apiURL,
+		HTTPClient: client,
+	}
+}
+
+func (s *QuoteService) GetQuoteFromFreightFast(ctx context.Context, request CreateQuoteInputDTO) (FreightFastOutputDTO, error) {
 
 	requestBody, err := json.Marshal(request)
 	if err != nil {
-		return FreightFastOutputDTO{}, err
+		return FreightFastOutputDTO{}, fmt.Errorf("failed to marshal request for Frete Rápido API: %w", err)
 	}
 
-	req, err := http.NewRequest("POST", freightfastURL, bytes.NewBuffer(requestBody))
+	req, err := http.NewRequestWithContext(ctx, "POST", s.APIURL, bytes.NewBuffer(requestBody))
 	if err != nil {
-		return FreightFastOutputDTO{}, err
+		return FreightFastOutputDTO{}, fmt.Errorf("failed to create request for Frete Rápido API: %w", err)
+
 	}
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{Timeout: 10 * time.Second}
-
 	resp, err := client.Do(req)
 	if err != nil {
-		return FreightFastOutputDTO{}, err
+		return FreightFastOutputDTO{}, fmt.Errorf("failed to send request to Frete Rápido API: %w", err)
+
 	}
 	defer resp.Body.Close()
 
@@ -40,7 +57,7 @@ func GetQuoteFromFreightFast(request CreateQuoteInputDTO) (FreightFastOutputDTO,
 	var outputDTO FreightFastOutputDTO
 	err = json.NewDecoder(resp.Body).Decode(&outputDTO)
 	if err != nil {
-		return outputDTO, err
+		return FreightFastOutputDTO{}, fmt.Errorf("failed to decode response from Frete Rápido API: %w", err)
 	}
 
 	return outputDTO, nil
