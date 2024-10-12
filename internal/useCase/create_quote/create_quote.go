@@ -18,7 +18,7 @@ func NewCreateQuoteUseCase(quoteGateway gateway.ICarrierGateway, quoteFetcher Qu
 
 func (uc *CreateQuoteUseCase) Execute(ctx context.Context, input CreateQuoteInputDTO) (*CreateQuoteOutputDTO, error) {
 
-	freightResponse, err := uc.quoteFetcher(input)
+	freightResponse, err := uc.quoteFetcher(ctx, input)
 	if err != nil {
 		return nil, errors.New("failed to get quote from Frete Rápido API: " + err.Error())
 	}
