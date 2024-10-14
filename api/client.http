@@ -45,3 +45,12 @@ Content-Type: application/json
         0
     ]
 }
+
+#####
+
+GET http://localhost:8081/api/v1/metrics?last_quotes=10
+Content-Type: application/json
+
+#####
+GET http://localhost:8081/api/v1/metrics
+Content-Type: application/json

@@ -11,8 +11,10 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
+	"github.com/tecwagner/frete_rapido_api/internal/infra/config"
 	"github.com/tecwagner/frete_rapido_api/internal/infra/database"
 	createquote "github.com/tecwagner/frete_rapido_api/internal/useCase/create_quote"
+	findmetric "github.com/tecwagner/frete_rapido_api/internal/useCase/find_metric"
 	"github.com/tecwagner/frete_rapido_api/web"
 	webserver "github.com/tecwagner/frete_rapido_api/web/webserver"
 	"gorm.io/gorm"
@@ -38,17 +40,22 @@ func main() {
 	quoteService := createquote.NewQuoteService(freightFastAPIURL, client)
 
 	carrierDB := database.NewCarrierDB(dbConnection)
+	matricDB := database.NewMetricDB(dbConnection)
 
 	fetcherFunc := func(ctx context.Context, request createquote.CreateQuoteInputDTO) (createquote.FreightFastOutputDTO, error) {
 		return quoteService.GetQuoteFromFreightFast(ctx, request)
 	}
 
 	createquoteUseCase := createquote.NewCreateQuoteUseCase(carrierDB, fetcherFunc)
+	metricUseCase := findmetric.NewMetricsUseCase(matricDB)
 
 	webserverInstance := webserver.NewWebServer(":8081")
 
 	webQuoteHandler := web.NewWebQuoteHandler(*createquoteUseCase)
 	webserverInstance.AddHandlerPublic("POST", "/api/v1/quote", webQuoteHandler.CreateQuote)
+
+	webMetricsHandler := web.NewWebMetricsHandler(*metricUseCase)
+	webserverInstance.AddHandlerPublic("GET", "/api/v1/metrics", webMetricsHandler.GetMetrics)
 
 	fmt.Println("Server is running", webserverInstance.WebServerPort)
 	fmt.Println("Welcome to Frete Rápido API")
@@ -69,7 +76,7 @@ func setupDatabase() (*gorm.DB, error) {
 		return nil, fmt.Errorf("error parsing boolean from DEBUG: %v", err)
 	}
 
-	db := &database.Database{
+	db := &config.Database{
 		AutoMigrateDb: autoMigrateDb,
 		Debug:         debug,
 		DsnTest:       os.Getenv("DSN_TEST"),

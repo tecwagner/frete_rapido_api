@@ -8,14 +8,16 @@ API Rest desenvolvida em Go Lang para realizar cotações de frete utilizando a 
 
 ### Pré-requisitos
 
-- Docker
-- Docker Compose
-- Go Lang: 1.23
-- API REST
-- API Frete Rápido Simulação
-- Banco de Dados Teste: SQlite 
-- Banco de Dados Desenvolvimento: PostgreSQL
-- ORM: Gorm
+- **Docker**: Ferramenta de contêiner para empacotar a aplicação.
+- **Docker Compose**: Utilizado para orquestrar a execução dos serviços, como o banco de dados.
+- **GoLang (1.23)**: Linguagem de programação utilizada no projeto.
+- **Testify**: Framework para realizar testes unitários.
+- **Mock**: Biblioteca de mocking para simulação de dependências nos testes.
+- **API Frete Rápido (Simulação)**: API externa para simular cotações de frete.
+- **Banco de Dados (Teste: SQLite)**: Usado para testes locais.
+- **Banco de Dados (Desenvolvimento: PostgreSQL)**: Utilizado em desenvolvimento.
+- **ORM (Gorm)**: Mapeamento objeto-relacional utilizado no projeto.
+
 
 ### Executando a Aplicação
 
@@ -24,18 +26,75 @@ API Rest desenvolvida em Go Lang para realizar cotações de frete utilizando a 
    ```bash
    docker build -t frete_rapido_api .
 
-2. **Executar o comando para permitir acesso docker/dbdata:**
+2. **Ajustar permissões para o diretório do Docker:**
 
    ```bash
-   sudo chown -R $USER:$USER .docker/dbdata   
+   sudo chown -R $USER:$USER .docker/dbdata
 
 3. **Executar o container Docker:**
 
    ```bash
    docker compose up --build   
 
-4. **Ao Executar o projeto para testar as rotas: api > client.http**   
+4. **Acessar o Banco de Dados (Postgres) no PgAdmin:**
 
-   - Solicitar cotação:
-      - POST http://localhost:8081/api/v1/quote
+   - Acesse o URL: [http://localhost:9000/login?next=%2F](http://localhost:9000/login?next=%2F)
+   - Credenciais de login:
+     - **Usuário**: `admin@user.com`
+     - **Senha**: `123456`
 
+   - Após login, acesse [http://localhost:9000/browser/](http://localhost:9000/browser/) e registre a instância do banco:
+     - **Nome**: `db`
+     - **Hostname**: `database`
+     - **Porta**: `5432`
+     - **Banco de Dados**: `freterapido`
+     - **Usuário**: `postgres`
+     - **Senha**: `postgres`
+
+
+5. **Testar as Rotas da API:**
+
+Use ferramentas como **Postman** ou **cURL** para testar as rotas da API:
+
+- **Extenção ResFul para VSCode na raiz do projeto:**:**
+
+   - api > client.http
+
+- **Solicitar Cotação:**
+  - Método: `POST`
+  - URL: `http://localhost:8081/api/v1/quote`
+  - Exemplo de Payload:
+    ```json
+    {
+      "shipper": { "zipcode": "01001-000" },
+      "recipient": { "zipcode": "20040-020" },
+      "volumes": [ { "height": 10, "width": 20, "length": 30, "weight": 5 } ]
+    }
+    ```
+
+- **Buscar Métricas de Cotações (com parâmetro):**
+  - Método: `GET`
+  - URL: `http://localhost:8081/api/v1/metrics?last_quotes=5`
+
+- **Buscar Métricas de Cotações (sem parâmetro):**
+  - Método: `GET`
+  - URL: `http://localhost:8081/api/v1/metrics`
+
+
+6. **Comando para Executar os Testes:**
+
+   - **Remover o arquivo de cobertura existente:**
+
+      - rm coverage.out
+
+   - **Remover cache de build do Go:**
+
+      - go clean -testcache
+
+   - **Executar novamente os testes com cobertura:**
+
+      - go test -coverprofile=coverage.out ./...
+
+   - **Gerar um arquivo HTML com o relatório de cobertura:**
+
+      - go tool cover -html=coverage.out
