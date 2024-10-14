@@ -25,11 +25,9 @@ func (suite *CarrierDBTestSuite) SetupSuite() {
 	suite.db, err = gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	suite.Nil(err)
 
-	// Executa a migration para criar a tabela "carriers"
 	err = suite.db.AutoMigrate(&entities.Carrier{})
 	suite.Nil(err)
 
-	// Cria uma nova instância do CarrierDB utilizando o Gorm
 	suite.carrierDB = NewCarrierDB(suite.db)
 }
 
