@@ -66,10 +66,49 @@ Use ferramentas como **Postman** ou **cURL** para testar as rotas da API:
   - Exemplo de Payload:
     ```json
     {
-      "shipper": { "zipcode": "01001-000" },
-      "recipient": { "zipcode": "20040-020" },
-      "volumes": [ { "height": 10, "width": 20, "length": 30, "weight": 5 } ]
-    }
+      "shipper": {
+         "registered_number": "25438296000158",
+         "token": "1d52a9b6b78cf07b0886152459a5c90",
+         "platform_code": "5AKVkHqCn"
+      },
+      "recipient": {
+         "type": 1,
+         "country": "BRA",
+         "zipcode": 29161376
+      },
+      "dispatchers": [
+         {
+               "registered_number": "25438296000158",
+               "zipcode": 29161376,
+               "total_price": 0.0,
+               "volumes": [
+                  {
+                     "amount": 1,
+                     "category": "7",
+                     "sku": "abc-teste-123",
+                     "height": 0.2,
+                     "width": 0.2,
+                     "length": 0.2,
+                     "unitary_price": 359,
+                     "unitary_weight": 5
+                  },
+                  {
+                     "amount": 2,
+                     "category": "7",
+                     "sku": "abc-teste-527",
+                     "height": 0.4,
+                     "width": 0.6,
+                     "length": 0.15,
+                     "unitary_price": 556,
+                     "unitary_weight": 4
+                  }
+               ]
+         }
+      ],
+      "simulation_type": [
+         0
+      ]
+   }
     ```
 
 - **Buscar Métricas de Cotações (com parâmetro):**
