@@ -33,7 +33,7 @@ Content-Type: application/json
 
 #####
 
-GET http://localhost:8081/api/v1/metrics?last_quotes=10
+GET http://localhost:8081/api/v1/metrics?last_quotes=15
 Content-Type: application/json
 
 #####
