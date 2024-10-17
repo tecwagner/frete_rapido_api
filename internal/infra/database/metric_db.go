@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sort"
 
 	"github.com/tecwagner/frete_rapido_api/internal/entities"
 	"gorm.io/gorm"
@@ -23,19 +24,29 @@ func (m *MetricDB) Find(ctx context.Context, lastQuotes *int) (*entities.Metrics
 	metricsResponse := &entities.MetricsResponse{}
 	quotes := []entities.Carrier{}
 
-	if err := m.DB.Order("id asc").Find(&quotes).Error; err != nil {
-		return nil, err
-	}
-
 	query := m.DB.Order("created_at desc").Order("price asc")
 
 	if lastQuotes != nil {
 		query = query.Limit(*lastQuotes)
-	}
+		err := query.Find(&quotes).Error
+		if err != nil {
+			return metricsResponse, fmt.Errorf("failed to find quotes: %w", err)
+		}
+	} else {
 
-	err := query.Find(&quotes).Error
-	if err != nil {
-		return metricsResponse, fmt.Errorf("failed to find quotes: %w", err)
+		var cheapestQuote entities.Carrier
+		err := m.DB.Order("price asc").First(&cheapestQuote).Error
+		if err != nil {
+			return metricsResponse, fmt.Errorf("failed to find cheapest quote: %w", err)
+		}
+
+		var mostExpensiveQuote entities.Carrier
+		err = m.DB.Order("price desc").First(&mostExpensiveQuote).Error
+		if err != nil {
+			return metricsResponse, fmt.Errorf("failed to find most expensive quote: %w", err)
+		}
+
+		quotes = append(quotes, cheapestQuote, mostExpensiveQuote)
 	}
 
 	if len(quotes) == 0 {
@@ -74,6 +85,10 @@ func (m *MetricDB) Find(ctx context.Context, lastQuotes *int) (*entities.Metrics
 		metric.CalculateAverageFreight()
 		metricsResponse.CarrierMetrics = append(metricsResponse.CarrierMetrics, *metric)
 	}
+
+	sort.Slice(metricsResponse.CarrierMetrics, func(i, j int) bool {
+		return metricsResponse.CarrierMetrics[i].CarrierName < metricsResponse.CarrierMetrics[j].CarrierName
+	})
 
 	metricsResponse.CheapestFreight = cheapestFreight
 	metricsResponse.MostExpensiveFreight = mostExpensiveFreight
