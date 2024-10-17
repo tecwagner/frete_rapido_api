@@ -24,8 +24,8 @@ func (uc *CreateQuoteUseCase) Execute(ctx context.Context, input CreateQuoteInpu
 	}
 
 	quoteResponse := ProcessFreightFastResponse(freightResponse)
-	if quoteResponse.Carriers == nil {
-		return nil, errors.New("quoteResponse.Carriers is nil")
+	if quoteResponse.NoCarriers {
+		return nil, errors.New("here are no carriers available for this zipcode")
 	}
 
 	quoteResponseID := uint(time.Now().Unix())
@@ -54,7 +54,7 @@ func (uc *CreateQuoteUseCase) Execute(ctx context.Context, input CreateQuoteInpu
 
 func ProcessFreightFastResponse(input FreightFastOutputDTO) *CreateQuoteOutputDTO {
 	if len(input.Dispatchers) == 0 {
-		return &CreateQuoteOutputDTO{Carriers: []Carrier{}}
+		return &CreateQuoteOutputDTO{Carriers: []Carrier{}, NoCarriers: true}
 	}
 
 	var carriers []Carrier
@@ -70,7 +70,12 @@ func ProcessFreightFastResponse(input FreightFastOutputDTO) *CreateQuoteOutputDT
 		}
 	}
 
+	if len(carriers) == 0 {
+		return &CreateQuoteOutputDTO{Carriers: []Carrier{}, NoCarriers: true}
+	}
+
 	return &CreateQuoteOutputDTO{
-		Carriers: carriers,
+		Carriers:   carriers,
+		NoCarriers: false,
 	}
 }
