@@ -27,7 +27,8 @@ func (m *MetricDB) Find(ctx context.Context, lastQuotes *int) (*entities.Metrics
 		return nil, err
 	}
 
-	query := m.DB.Order("created_at DESC")
+	query := m.DB.Order("created_at desc").Order("price asc")
+
 	if lastQuotes != nil {
 		query = query.Limit(*lastQuotes)
 	}

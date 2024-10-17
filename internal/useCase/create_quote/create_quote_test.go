@@ -16,19 +16,17 @@ func TestCreateQuoteUseCase_Execute_Success(t *testing.T) {
 
 	mockQuoteFetcher := func(ctx context.Context, input CreateQuoteInputDTO) (FreightFastOutputDTO, error) {
 		return FreightFastOutputDTO{
-			Dispatchers: []struct {
-				Offers []Offer `json:"offers"`
-			}{
+			Dispatchers: []Dispatcher{
 				{
 					Offers: []Offer{
 						{
-							Carrier: struct {
-								Name string `json:"name"`
-							}{Name: "Carrier1"},
+							Carrier: Carrier{
+								Name: "Carrier1",
+							},
 							Service: "Standard",
-							DeliveryTime: struct {
-								Days int `json:"days"`
-							}{Days: 5},
+							DeliveryTime: DeliveryTime{
+								Days: 5,
+							},
 							FinalPrice: 100.0,
 						},
 					},
@@ -40,54 +38,74 @@ func TestCreateQuoteUseCase_Execute_Success(t *testing.T) {
 	useCase := NewCreateQuoteUseCase(mockGateway, mockQuoteFetcher)
 
 	input := CreateQuoteInputDTO{
-		Shipper:   Shipper{RegisteredNumber: "25438296000158", Token: "1d52a9b6b78cf07b08586152459a5c90", PlatformCode: "5AKVkHqCn"},
-		Recipient: Recipient{Type: 1, Country: "BR", Zipcode: 12345},
-		Dispatchers: []Dispatcher{
-			{
-				RegisteredNumber: "987654321",
-				Zipcode:          54321,
-				TotalPrice:       100.0,
-				Volumes: []Volume{
-					{Amount: 1, Category: "Box", Height: 10, Width: 10, Length: 10, UnitaryPrice: 50, UnitaryWeight: 5},
-				},
+		Recipient: Recipient{
+			Address: Address{
+				Zipcode: "12345",
 			},
 		},
-		SimulationType: []int{1},
+		Volumes: []Volume{
+			{Category: 1, Amount: 1, UnitaryWeight: 5, Price: 50, SKU: "SKU1", Height: 10, Width: 10, Length: 10},
+		},
 	}
 
 	mockGateway.On("Save", mock.Anything, mock.AnythingOfType("[]entities.Carrier"), mock.AnythingOfType("uint")).Return(nil).Once()
 
 	output, err := useCase.Execute(ctx, input)
 
-	// Verifique as asserções
 	assert.NoError(t, err)
 	assert.NotNil(t, output)
 	assert.Len(t, output.Carriers, 1)
 	assert.Equal(t, "Carrier1", output.Carriers[0].Name)
+	assert.False(t, output.NoCarriers)
 
 	mockGateway.AssertExpectations(t)
 }
 
-func TestCreateQuoteUseCase_SaveError(t *testing.T) {
+func TestCreateQuoteUseCase_NoCarriers(t *testing.T) {
+	ctx := context.Background()
+	mockGateway := new(mocks.MockCarrierGateway)
 
+	mockQuoteFetcher := func(ctx context.Context, input CreateQuoteInputDTO) (FreightFastOutputDTO, error) {
+		return FreightFastOutputDTO{}, errors.New("there are no carriers available for this zipcode")
+	}
+
+	useCase := NewCreateQuoteUseCase(mockGateway, mockQuoteFetcher)
+
+	input := CreateQuoteInputDTO{
+		Recipient: Recipient{
+			Address: Address{
+				Zipcode: "12345",
+			},
+		},
+		Volumes: []Volume{
+			{Category: 1, Amount: 1, UnitaryWeight: 5, Price: 50, SKU: "SKU1", Height: 10, Width: 10, Length: 10},
+		},
+	}
+
+	output, err := useCase.Execute(ctx, input)
+
+	assert.Error(t, err)
+	assert.EqualError(t, err, err.Error())
+	assert.Nil(t, output)
+}
+
+func TestCreateQuoteUseCase_SaveError(t *testing.T) {
 	ctx := context.Background()
 	mockGateway := new(mocks.MockCarrierGateway)
 
 	mockQuoteFetcher := func(ctx context.Context, input CreateQuoteInputDTO) (FreightFastOutputDTO, error) {
 		return FreightFastOutputDTO{
-			Dispatchers: []struct {
-				Offers []Offer `json:"offers"`
-			}{
+			Dispatchers: []Dispatcher{
 				{
 					Offers: []Offer{
 						{
-							Carrier: struct {
-								Name string `json:"name"`
-							}{Name: "Carrier1"},
+							Carrier: Carrier{
+								Name: "Carrier1",
+							},
 							Service: "Standard",
-							DeliveryTime: struct {
-								Days int `json:"days"`
-							}{Days: 5},
+							DeliveryTime: DeliveryTime{
+								Days: 5,
+							},
 							FinalPrice: 100.0,
 						},
 					},
@@ -99,19 +117,14 @@ func TestCreateQuoteUseCase_SaveError(t *testing.T) {
 	useCase := NewCreateQuoteUseCase(mockGateway, mockQuoteFetcher)
 
 	input := CreateQuoteInputDTO{
-		Shipper:   Shipper{RegisteredNumber: "123456789", Token: "token", PlatformCode: "platform"},
-		Recipient: Recipient{Type: 1, Country: "BR", Zipcode: 12345},
-		Dispatchers: []Dispatcher{
-			{
-				RegisteredNumber: "987654321",
-				Zipcode:          54321,
-				TotalPrice:       100.0,
-				Volumes: []Volume{
-					{Amount: 1, Category: "Box", Height: 10, Width: 10, Length: 10, UnitaryPrice: 50, UnitaryWeight: 5},
-				},
+		Recipient: Recipient{
+			Address: Address{
+				Zipcode: "12345",
 			},
 		},
-		SimulationType: []int{1},
+		Volumes: []Volume{
+			{Category: 1, Amount: 1, UnitaryWeight: 5, Price: 50, SKU: "SKU1", Height: 10, Width: 10, Length: 10},
+		},
 	}
 
 	mockGateway.On("Save", mock.Anything, mock.AnythingOfType("[]entities.Carrier"), mock.AnythingOfType("uint")).Return(errors.New("database error")).Once()

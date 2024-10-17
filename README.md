@@ -63,53 +63,37 @@ Use ferramentas como **Postman** ou **cURL** para testar as rotas da API:
 - **Solicitar Cotação:**
   - Método: `POST`
   - URL: `http://localhost:8081/api/v1/quote`
-  - Exemplo de Payload:
+  - Exemplo de entrada do JSON Body:
     ```json
-    {
-      "shipper": {
-         "registered_number": "25438296000158",
-         "token": "1d52a9b6b78cf07b0886152459a5c90",
-         "platform_code": "5AKVkHqCn"
-      },
-      "recipient": {
-         "type": 1,
-         "country": "BRA",
-         "zipcode": 29161376
-      },
-      "dispatchers": [
-         {
-               "registered_number": "25438296000158",
-               "zipcode": 29161376,
-               "total_price": 0.0,
-               "volumes": [
-                  {
-                     "amount": 1,
-                     "category": "7",
-                     "sku": "abc-teste-123",
-                     "height": 0.2,
-                     "width": 0.2,
-                     "length": 0.2,
-                     "unitary_price": 359,
-                     "unitary_weight": 5
-                  },
-                  {
-                     "amount": 2,
-                     "category": "7",
-                     "sku": "abc-teste-527",
-                     "height": 0.4,
-                     "width": 0.6,
-                     "length": 0.15,
-                     "unitary_price": 556,
-                     "unitary_weight": 4
-                  }
-               ]
+   {
+      "recipient":{
+         "address":{
+            "zipcode":"01311000"
          }
-      ],
-      "simulation_type": [
-         0
+      },
+      "volumes":[
+         {
+            "category":7,
+            "amount":1,
+            "unitary_weight":5,
+            "price":349,
+            "sku":"abc-teste-123",
+            "height":0.2,
+            "width":0.2,
+            "length":0.2
+         },
+         {
+            "category":7,
+            "amount":2,
+            "unitary_weight":4,
+            "price":556,
+            "sku":"abc-teste-527",
+            "height":0.4,
+            "width":0.6,
+            "length":0.15
+         }
       ]
    }
-    ```
 
 - **Buscar Métricas de Cotações (com parâmetro):**
   - Método: `GET`

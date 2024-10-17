@@ -1,45 +1,32 @@
 package createquote
 
 type CreateQuoteInputDTO struct {
-	Shipper        Shipper      `json:"shipper"`
-	Recipient      Recipient    `json:"recipient"`
-	Dispatchers    []Dispatcher `json:"dispatchers"`
-	SimulationType []int        `json:"simulation_type"`
-}
-
-type Shipper struct {
-	RegisteredNumber string `json:"registered_number"`
-	Token            string `json:"token"`
-	PlatformCode     string `json:"platform_code"`
+	Recipient Recipient `json:"recipient"`
+	Volumes   []Volume  `json:"volumes"`
 }
 
 type Recipient struct {
-	Type    int    `json:"type"`
-	Country string `json:"country"`
-	Zipcode int    `json:"zipcode"`
+	Address Address `json:"address"`
 }
 
-type Dispatcher struct {
-	RegisteredNumber string   `json:"registered_number"`
-	Zipcode          int      `json:"zipcode"`
-	TotalPrice       float64  `json:"total_price"`
-	Volumes          []Volume `json:"volumes"`
+type Address struct {
+	Zipcode string `json:"zipcode"`
 }
 
 type Volume struct {
+	Category      int     `json:"category"`
 	Amount        int     `json:"amount"`
-	AmountVolumes int     `json:"amount_volumes"`
-	Category      string  `json:"category"`
+	UnitaryWeight float64 `json:"unitary_weight"`
+	Price         float64 `json:"price"`
 	SKU           string  `json:"sku"`
 	Height        float64 `json:"height"`
 	Width         float64 `json:"width"`
 	Length        float64 `json:"length"`
-	UnitaryPrice  float64 `json:"unitary_price"`
-	UnitaryWeight float64 `json:"unitary_weight"`
 }
 
 type CreateQuoteOutputDTO struct {
-	Carriers []Carrier `json:"carrier"`
+	Carriers   []Carrier `json:"carrier"`
+	NoCarriers bool      `json:"no_carriers"`
 }
 
 type Carrier struct {
@@ -50,18 +37,20 @@ type Carrier struct {
 }
 
 type FreightFastOutputDTO struct {
-	Dispatchers []struct {
-		Offers []Offer `json:"offers"`
-	} `json:"dispatchers"`
+	Dispatchers []Dispatcher `json:"dispatchers"`
+}
+
+type Dispatcher struct {
+	Offers []Offer `json:"offers"`
 }
 
 type Offer struct {
-	Carrier struct {
-		Name string `json:"name"`
-	} `json:"carrier"`
-	Service      string `json:"service"`
-	DeliveryTime struct {
-		Days int `json:"days"`
-	} `json:"delivery_time"`
-	FinalPrice float64 `json:"final_price"`
+	Carrier      Carrier      `json:"carrier"`
+	Service      string       `json:"service"`
+	DeliveryTime DeliveryTime `json:"delivery_time"`
+	FinalPrice   float64      `json:"final_price"`
+}
+
+type DeliveryTime struct {
+	Days int `json:"days"`
 }
